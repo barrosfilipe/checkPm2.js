@@ -32,7 +32,7 @@
 
 ```
 $ ./checkPm2.js https://pm2.netflix.com:9615 movies-api
-PM2 app:movies-api is OK
+OK: PM2 app:movies-api is Online
 ```
 
 **Note:** You have to enable **pm2 web api service** by running `pm2 web`. Default port is `9615`
