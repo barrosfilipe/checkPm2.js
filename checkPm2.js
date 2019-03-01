@@ -39,40 +39,47 @@ function checkPm2(url) {
 
 function parseJsonAndReturnState(json, appName) {
   let status;
-  const appExist = json.filter(app => app.name == appName);
+  const appExist = json.filter(app => app.name === appName);
 
   if (appExist.length) {
-    status = json[0].pm2_env.status;
+    status = appExist[0].pm2_env.status;
   } else {
-    process.stdout.write(`UNKNOWN: PM2 app:${appName} is UNKNOWN\n`);
+    process.stdout.write(`UNKNOWN: PM2 app:${appName} failed to return\n`);
     process.exit(state.UNKNOWN);
   }
 
   switch (status) {
     case "online":
-      process.stdout.write(`OK: PM2 app:${appName} is OK\n`);
+      process.stdout.write(`OK: PM2 app:${appName} is Online\n`);
       process.exit(state.OK);
       break;
     case "stopped":
-      process.stdout.write(`WARNING: PM2 app:${appName} is WARNING\n`);
+      process.stdout.write(`WARNING: PM2 app:${appName} is Stopped\n`);
       process.exit(state.WARNING);
       break;
     case "errored":
-      process.stdout.write(`CRITICAL: PM2 app:${appName} is CRITICAL\n`);
+      process.stdout.write(`CRITICAL: PM2 app:${appName} is Errored\n`);
       process.exit(state.CRITICAL);
       break;
     default:
-      process.stdout.write(`UNKNOWN: PM2 app:${appName} is UNKNOWN\n`);
+      process.stdout.write(`UNKNOWN: PM2 app:${appName} failed to return\n`);
       process.exit(state.UNKNOWN);
   }
 }
 
+function addhttp(url) {
+  if (!/^(f|ht)tps?:\/\//i.test(url)) {
+    url = `http://${url}`;
+  }
+  return url;
+}
+
 checkParams();
-checkPm2(pm2Url)
+checkPm2(addhttp(pm2Url))
   .then(response =>
     parseJsonAndReturnState(JSON.parse(response).processes, appName)
   )
   .catch(err => {
-    process.stdout.write(`CRITICAL: ${pm2Url} not responding \n`);
+    process.stdout.write(`CRITICAL: PM2 ${pm2Url} not responding\n`);
     process.exit(state.CRITICAL);
   });
