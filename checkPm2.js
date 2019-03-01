@@ -44,30 +44,35 @@ function parseJsonAndReturnState(json, appName) {
   if (appExist.length) {
     status = json[0].pm2_env.status;
   } else {
-    process.stdout.write(`PM2 app:${appName} is UNKNOWN\n`);
+    process.stdout.write(`UNKNOWN: PM2 app:${appName} is UNKNOWN\n`);
     process.exit(state.UNKNOWN);
   }
 
   switch (status) {
     case "online":
-      process.stdout.write(`PM2 app:${appName} is OK\n`);
+      process.stdout.write(`OK: PM2 app:${appName} is OK\n`);
       process.exit(state.OK);
       break;
     case "stopped":
-      process.stdout.write(`PM2 app:${appName} is WARNING\n`);
+      process.stdout.write(`WARNING: PM2 app:${appName} is WARNING\n`);
       process.exit(state.WARNING);
       break;
     case "errored":
-      process.stdout.write(`PM2 app:${appName} is CRITICAL\n`);
+      process.stdout.write(`CRITICAL: PM2 app:${appName} is CRITICAL\n`);
       process.exit(state.CRITICAL);
       break;
     default:
-      process.stdout.write(`PM2 app:${appName} is UNKNOWN\n`);
+      process.stdout.write(`UNKNOWN: PM2 app:${appName} is UNKNOWN\n`);
       process.exit(state.UNKNOWN);
   }
 }
 
 checkParams();
-checkPm2(pm2Url).then(response =>
-  parseJsonAndReturnState(JSON.parse(response).processes, appName)
-);
+checkPm2(pm2Url)
+  .then(response =>
+    parseJsonAndReturnState(JSON.parse(response).processes, appName)
+  )
+  .catch(err => {
+    process.stdout.write(`CRITICAL: ${pm2Url} not responding \n`);
+    process.exit(state.CRITICAL);
+  });
